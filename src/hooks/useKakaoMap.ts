@@ -10,7 +10,7 @@ declare global {
 
 const useGeneralKakaoMap = create<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  map: any | undefined;
+  map: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setMap: (map: any) => void;
 }>((set) => ({
@@ -36,7 +36,7 @@ const useKakaoMap = () => {
   }, [setMap]);
 
   return {
-    kakao: window.kakao.maps,
+    kakao: window.kakao,
     map: generalMap,
   };
 };
