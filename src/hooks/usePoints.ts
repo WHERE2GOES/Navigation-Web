@@ -36,13 +36,15 @@ const usePoints = () => {
       setPoints(newPoints);
     };
 
-    kakao.maps.event?.addListener(map, "bounds_changed", calculateNewPoints);
+    if (map)
+      kakao.maps?.event?.addListener(map, "bounds_changed", calculateNewPoints);
     return () => {
-      try {
-        kakao.maps.event?.removeListener(map, "bounds_changed", calculateNewPoints);
-      } catch (error) {
-        console.error(error);
-      }
+      if (map)
+        kakao.maps?.event?.removeListener(
+          map,
+          "bounds_changed",
+          calculateNewPoints
+        );
     };
   }, [kakao, latlngs, map]);
 
