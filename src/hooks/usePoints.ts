@@ -23,14 +23,19 @@ const usePoints = () => {
 
   useEffect(() => {
     const calculateNewPoints = () => {
-      if (!map) return;
+      const mapLayer = document.querySelector("#map > div:nth-child(4) > div");
+      if (!map || !(mapLayer instanceof HTMLElement)) return;
+
       const projection = map.getProjection();
+      const top = Number(mapLayer.style.top.slice(0, -2));
+      const left = Number(mapLayer.style.left.slice(0, -2));
 
       const newPoints = latlngs.map((latlng) => {
         const point = projection.containerPointFromCoords(
           new kakao.maps.LatLng(latlng.lat, latlng.lng)
         );
-        return { x: point.x, y: point.y };
+
+        return { x: point.x - left, y: point.y - top };
       });
 
       setPoints(newPoints);
