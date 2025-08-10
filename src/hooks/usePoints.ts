@@ -5,7 +5,6 @@ import { useSearchParams } from "react-router";
 const parseLatlngParam = (param: string) => {
   return param.split("n").map((e) => {
     const [lat, lng] = e.split(",");
-    console.log(lat, lng);
     return { lat: Number(lat), lng: Number(lng) };
   });
 };
