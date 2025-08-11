@@ -3,6 +3,8 @@ import { create } from "zustand";
 
 declare global {
   interface Window {
+    isKakaoMapInitialized: boolean,
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     kakao: any;
 
@@ -13,16 +15,14 @@ declare global {
     updateMyLocation?: (lat: number, lng: number) => void;
 
     /** 지도에 마커를 표시 */
-    markMap?: (
-      lat: number,
-      lng: number,
-      onClick?: () => void
-    ) => void;
+    markMap?: (lat: number, lng: number, onClick?: () => void) => void;
 
     /** 지도의 모든 마커를 제거 */
     clearMap?: () => void;
   }
 }
+
+window.isKakaoMapInitialized = false;
 
 const useGeneralKakaoMap = create<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,6 +42,9 @@ const useKakaoMap = () => {
   const markers = useRef<any[]>([]);
 
   useEffect(() => {
+    if (window.isKakaoMapInitialized) return;
+    window.isKakaoMapInitialized = true;
+
     window.kakao.maps.load(() => {
       const mapContainer = document.getElementById("map");
 
@@ -84,11 +87,7 @@ const useKakaoMap = () => {
       }
     };
 
-    const markMap = (
-      lat: number,
-      lng: number,
-      onClick?: () => void
-    ) => {
+    const markMap = (lat: number, lng: number, onClick?: () => void) => {
       const latlng = new window.kakao.maps.LatLng(lat, lng);
       const imageSrc = "/images/ic_marker.svg";
       const imageSize = new window.kakao.maps.Size(61.88, 48.61);
@@ -116,6 +115,7 @@ const useKakaoMap = () => {
     window.updateMyLocation = updateMyLocation;
     window.markMap = markMap;
     window.clearMap = clearMap;
+    
     return () => {
       window.panMapTo = undefined;
       window.updateMyLocation = undefined;
