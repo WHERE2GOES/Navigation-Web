@@ -1,12 +1,12 @@
-import { useId, type CSSProperties } from "react"; // useId 훅을 import 합니다.
+import { useId, type CSSProperties, type FC } from "react"; // useId 훅을 import 합니다.
 
-const BorderedLine = (prop: {
+const BorderedLine: FC<{
   points: { x: number; y: number }[];
   fillColor: string | string[];
   borderColor: CSSProperties["color"];
   thickness: number;
   borderThickness: number;
-}) => {
+}> = (prop) => {
   // 컴포넌트마다 고유한 ID를 생성해 그라데이션이 겹치지 않도록 합니다.
   const gradientId = useId();
 
