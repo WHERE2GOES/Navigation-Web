@@ -9,10 +9,7 @@ const KakaoMap: FC<{ latlngs: Latlngs }> = ({ latlngs }) => {
   const { kakao, map } = useKakaoMap();
 
   const [points, setPoints] = useState<{ x: number; y: number }[]>([]);
-  const [topLeft, setTopLeft] = useState({
-    top: 0,
-    left: 0,
-  });
+  const [topLeft, setTopLeft] = useState<{ top: number; left: number }>();
 
   useEffect(() => {
     if (!map || !kakao) return;
@@ -24,6 +21,7 @@ const KakaoMap: FC<{ latlngs: Latlngs }> = ({ latlngs }) => {
         Math.min(...latlngs.map((latlng) => latlng.lng))
       ),
       title: "marker-top-left",
+      opacity: 0,
     });
 
     return () => topLeft.setMap(null);
@@ -31,18 +29,21 @@ const KakaoMap: FC<{ latlngs: Latlngs }> = ({ latlngs }) => {
 
   useEffect(() => {
     const calculateNewPoints = () => {
-      const topLeft = document
+      const topLeftMarker = document
         .querySelector("[title=marker-top-left]")
         ?.closest("div");
 
-      if (!map || !(topLeft instanceof HTMLDivElement)) return;
+      if (!map || !(topLeftMarker instanceof HTMLDivElement)) return;
+      topLeftMarker.style.opacity = "0";
 
-      const projection = map.getProjection();
+      const [top, left] = [
+        topLeftMarker.style.top,
+        topLeftMarker.style.left,
+      ].map((style) => Number(style.slice(0, -2)));
 
-      const top = Number(topLeft.style.top.slice(0, -2));
-      const left = Number(topLeft.style.left.slice(0, -2));
       setTopLeft({ top, left });
 
+      const projection = map.getProjection();
       const topLeftOfLatlngs = projection.containerPointFromCoords(
         new kakao.maps.LatLng(
           Math.max(...latlngs.map((latlng) => latlng.lat)),
@@ -61,7 +62,6 @@ const KakaoMap: FC<{ latlngs: Latlngs }> = ({ latlngs }) => {
         };
       });
 
-      console.log(newPoints);
       setPoints(newPoints);
     };
 
@@ -85,6 +85,7 @@ const KakaoMap: FC<{ latlngs: Latlngs }> = ({ latlngs }) => {
     <div className="relative w-full h-full">
       <div className="w-full h-full" id="map"></div>
       {layer &&
+        topLeft &&
         createPortal(
           <div
             className="absolute z-0"
