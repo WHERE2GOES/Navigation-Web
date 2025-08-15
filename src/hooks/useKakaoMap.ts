@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { create } from "zustand";
 
 declare global {
   interface Window {
-    isKakaoMapInitialized: boolean,
+    isKakaoMapInitialized: boolean;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     kakao: any;
@@ -24,23 +23,15 @@ declare global {
 
 window.isKakaoMapInitialized = false;
 
-const useGeneralKakaoMap = create<{
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  map: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setMap: (map: any) => void;
-}>((set) => ({
-  map: undefined,
-  setMap: (map) => set((state) => ({ ...state, map })),
-}));
-
 const useKakaoMap = () => {
-  const { map: generalMap, setMap } = useGeneralKakaoMap();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [map, setMap] = useState<any>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [locationMarker, setLocationMarker] = useState<any>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markers = useRef<any[]>([]);
 
+  // 카카오맵 SDK 로딩
   useEffect(() => {
     if (window.isKakaoMapInitialized) return;
     window.isKakaoMapInitialized = true;
@@ -58,10 +49,11 @@ const useKakaoMap = () => {
     });
   }, [setMap]);
 
+  // 전역 함수 선언
   useEffect(() => {
     const panMapTo = (lat: number, lng: number) => {
       const latlng = new window.kakao.maps.LatLng(lat, lng);
-      generalMap?.panTo(latlng);
+      map?.panTo(latlng);
     };
 
     const updateMyLocation = (lat: number, lng: number) => {
@@ -76,11 +68,13 @@ const useKakaoMap = () => {
           imageSize,
           imageOption
         );
+
         const newMarker = new window.kakao.maps.Marker({
           position: latlng,
           image: markerImage,
         });
-        newMarker.setMap(generalMap);
+
+        newMarker.setMap(map);
         setLocationMarker(newMarker);
       } else {
         locationMarker.setPosition(latlng);
@@ -97,11 +91,13 @@ const useKakaoMap = () => {
         imageSize,
         imageOption
       );
+      
       const newMarker = new window.kakao.maps.Marker({
         position: latlng,
         image: markerImage,
       });
-      newMarker.setMap(generalMap);
+
+      newMarker.setMap(map);
       if (onClick) newMarker.addListener("click", onClick);
       markers.current.push(newMarker);
     };
@@ -115,18 +111,18 @@ const useKakaoMap = () => {
     window.updateMyLocation = updateMyLocation;
     window.markMap = markMap;
     window.clearMap = clearMap;
-    
+
     return () => {
       window.panMapTo = undefined;
       window.updateMyLocation = undefined;
       window.markMap = undefined;
       window.clearMap = undefined;
     };
-  }, [generalMap, locationMarker]);
+  }, [map, locationMarker]);
 
   return {
     kakao: window.kakao,
-    map: generalMap,
+    map,
   };
 };
 
