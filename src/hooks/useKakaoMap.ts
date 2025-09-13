@@ -1,25 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-
-declare global {
-  interface Window {
-    isKakaoMapInitialized: boolean;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    kakao: any;
-
-    /** 지도를 지정 위치로 이동 */
-    panMapTo?: (lat: number, lng: number) => void;
-
-    /** 사용자의 현재 위치를 업데이트 */
-    updateMyLocation?: (lat: number, lng: number) => void;
-
-    /** 지도에 마커를 표시 */
-    markMap?: (lat: number, lng: number, onClick?: () => void) => void;
-
-    /** 지도의 모든 마커를 제거 */
-    clearMap?: () => void;
-  }
-}
+import useRoute from "./useRoute";
 
 window.isKakaoMapInitialized = false;
 
@@ -30,6 +10,7 @@ const useKakaoMap = () => {
   const [locationMarker, setLocationMarker] = useState<any>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markers = useRef<any[]>([]);
+  const { setRoute } = useRoute();
 
   // 카카오맵 SDK 로딩
   useEffect(() => {
@@ -91,7 +72,7 @@ const useKakaoMap = () => {
         imageSize,
         imageOption
       );
-      
+
       const newMarker = new window.kakao.maps.Marker({
         position: latlng,
         image: markerImage,
@@ -102,6 +83,10 @@ const useKakaoMap = () => {
       markers.current.push(newMarker);
     };
 
+    const markRoute = (positions: { lat: number; lng: number }[]) => {
+      setRoute(positions);
+    };
+
     const clearMap = () => {
       markers.current.forEach((marker) => marker.setMap(null));
       markers.current = [];
@@ -110,15 +95,17 @@ const useKakaoMap = () => {
     window.panMapTo = panMapTo;
     window.updateMyLocation = updateMyLocation;
     window.markMap = markMap;
+    window.markRoute = markRoute;
     window.clearMap = clearMap;
 
     return () => {
       window.panMapTo = undefined;
       window.updateMyLocation = undefined;
       window.markMap = undefined;
+      window.markRoute = undefined;
       window.clearMap = undefined;
     };
-  }, [map, locationMarker]);
+  }, [map, locationMarker, setRoute]);
 
   return {
     kakao: window.kakao,

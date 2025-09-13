@@ -2,12 +2,12 @@ import { useEffect, useState, type FC } from "react";
 import BorderedLine from "@/components/BorderedLine";
 import useKakaoMap from "@/hooks/useKakaoMap";
 import { createPortal } from "react-dom";
+import useRoute from "@/hooks/useRoute";
 
-export type Latlngs = { lat: number; lng: number }[];
-
-const KakaoMap: FC<{ latlngs: Latlngs }> = ({ latlngs }) => {
+const KakaoMap: FC = () => {
   const { kakao, map } = useKakaoMap();
 
+  const { route } = useRoute();
   const [points, setPoints] = useState<{ x: number; y: number }[]>([]);
   const [topLeft, setTopLeft] = useState<{ top: number; left: number }>();
 
@@ -17,15 +17,15 @@ const KakaoMap: FC<{ latlngs: Latlngs }> = ({ latlngs }) => {
     const topLeft = new kakao.maps.Marker({
       map,
       position: new kakao.maps.LatLng(
-        Math.max(...latlngs.map((latlng) => latlng.lat)),
-        Math.min(...latlngs.map((latlng) => latlng.lng))
+        Math.max(...route.map((p) => p.lat)),
+        Math.min(...route.map((p) => p.lng))
       ),
       title: "marker-top-left",
       opacity: 0,
     });
 
     return () => topLeft.setMap(null);
-  }, [kakao, map, latlngs]);
+  }, [kakao, map, route]);
 
   useEffect(() => {
     const calculateNewPoints = () => {
@@ -46,14 +46,14 @@ const KakaoMap: FC<{ latlngs: Latlngs }> = ({ latlngs }) => {
       const projection = map.getProjection();
       const topLeftOfLatlngs = projection.containerPointFromCoords(
         new kakao.maps.LatLng(
-          Math.max(...latlngs.map((latlng) => latlng.lat)),
-          Math.min(...latlngs.map((latlng) => latlng.lng))
+          Math.max(...route.map((p) => p.lat)),
+          Math.min(...route.map((p) => p.lng))
         )
       );
 
-      const newPoints = latlngs.map((latlng) => {
+      const newPoints = route.map((p) => {
         const point = projection.containerPointFromCoords(
-          new kakao.maps.LatLng(latlng.lat, latlng.lng)
+          new kakao.maps.LatLng(p.lat, p.lng)
         );
 
         return {
@@ -75,7 +75,7 @@ const KakaoMap: FC<{ latlngs: Latlngs }> = ({ latlngs }) => {
           calculateNewPoints
         );
     };
-  }, [kakao, map, latlngs]);
+  }, [kakao, map, route]);
 
   const layer = document.querySelector(
     "#map > div:nth-child(1) > div > div:nth-child(6)"
